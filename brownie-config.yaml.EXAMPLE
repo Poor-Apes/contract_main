@@ -1,0 +1,23 @@
+dotenv: .env
+ipfs:
+  nft_json_folder: '...'
+wallets:
+  from_key: ${PRIVATE_KEY}
+dependencies:
+  - smartcontractkit/chainlink-brownie-contracts@1.2.0
+  - paulrberg/prb-math@2.5.0
+  - OpenZeppelin/openzeppelin-contracts@4.7.3
+compiler:
+  solc:
+    version: 0.8.4
+    remappings:
+      - '@chainlink=smartcontractkit/chainlink-brownie-contracts@1.2.0'
+      - '@prb=paulrberg/prb-math@2.5.0'
+      - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.3'
+networks:
+  goerli:
+    max_supply: 1000
+    # The location of the BTC_USD ChainLink contract on Goerli
+    btc_usd_price_feed: '0xA39434A63A52E749F02807ae27335515BA4b07F7'
+  development:
+    max_supply: 3

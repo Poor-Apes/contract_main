@@ -1,0 +1,10 @@
+__pycache__
+.env
+brownie-config.yaml
+brownie-config.yaml.*
+!brownie-config.yaml.EXAMPLE
+.history
+.hypothesis/
+.deps/
+build/
+reports/
