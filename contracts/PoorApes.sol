@@ -100,7 +100,7 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
         }
         int256 z = 90000000000000000; //  0.09
         int256 a = 100000000000000000; //  0.1
-        int256 b = 1004500000000000000; //  1.0045
+        int256 b = 1006400000000000000; //  1.0064
         int256 c = -10000000000000000000; // -10
         int256 d = 100000000000000000; //  0.01
         int256 cost = PRBMathSD59x18.mul(
