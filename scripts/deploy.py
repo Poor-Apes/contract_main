@@ -2,7 +2,7 @@ import sys
 from brownie import Wei, accounts, Contract, network, config, MockV3Aggregator, PoorApes
 
 
-def deploy_poor_apes_contract(BTC_USD_price = None):
+def deploy_poor_apes_contract(BTC_USD_price=None):
     if network.show_active() == "development" and BTC_USD_price == None:
         print("You need to pass a BTC_USD price")
     else:
@@ -10,7 +10,6 @@ def deploy_poor_apes_contract(BTC_USD_price = None):
         price_feed_address = get_price_feed_address(account, int(BTC_USD_price))
         poor_apes_contract = PoorApes.deploy(
             price_feed_address,
-            config["networks"][network.show_active()]["max_supply"],
             config["networks"][network.show_active()]["nft_json_folder"],
             {"from": account},
         )
@@ -43,11 +42,11 @@ def get_price_feed_address(account, mock_value=None):
 
 
 def adjust_BTC_USD_price(usd_price):
-    return usd_price * (10 ** 8)
+    return usd_price * (10**8)
 
 
-def main(BTC_USD_price = None):
-    #BTC_USD_price = None
+def main(BTC_USD_price=None):
+    # BTC_USD_price = None
     if len(sys.argv) == 2 and sys.argv[1].isnumeric():
         BTC_USD_price = sys.argv[1]
     return deploy_poor_apes_contract(BTC_USD_price)
