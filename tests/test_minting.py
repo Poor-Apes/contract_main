@@ -4,14 +4,25 @@ import json
 import pytest
 import requests
 from brownie import reverts
-from brownie import Wei, accounts, network, config, MockV3Aggregator, PoorApes
+from brownie import Wei, accounts, network, config, convert, MockV3Aggregator, PoorApes
 from brownie.exceptions import VirtualMachineError
 
 current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
 sys.path.append(scripts_path)
 
-import deploy, development
+import deploy
+
+price_for_first_nft = convert.to_int("0.05 ether")
+price_for_99th_nft = convert.to_int("0.09 ether")
+price_for_199th_nft = convert.to_int("0.15 ether")
+price_for_299th_nft = convert.to_int("0.27 ether")
+price_for_399th_nft = convert.to_int("0.46 ether")
+price_for_499th_nft = convert.to_int("0.81 ether")
+price_for_599th_nft = convert.to_int("1.41 ether")
+price_for_699th_nft = convert.to_int("2.46 ether")
+price_for_700th_nft = convert.to_int("2.46 ether")
+price_for_800th_nft = convert.to_int("2.46 ether")
 
 # $ brownie console
 # >>> contract = deploy.deploy_poor_apes_contract(19000)
@@ -180,24 +191,84 @@ def test_max_mint_for_account():
 
 
 def test_minting_cost_get_more_expensive():
-    development.create_more_accounts(40)
     contract = deploy.deploy_poor_apes_contract(19000)
     contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(-1))
-    for i in range(33):
+    for i in range(100):
         minter_acc = accounts[i + 1]
-        print("account: " + str(minter_acc))
-        print("balance of: " + str(minter_acc.balance().to("ether")))
-        for s in range(3):
-            mint_num = (i * 3) + (s + 1)
-            print("--> mint number: " + str(mint_num))
-            contract.mintNFT(
-                {
-                    "from": minter_acc,
-                    "value": int(contract.minting_cost(-1)),
-                }
-            )
+        contract.mintNFT(
+            {
+                "from": minter_acc,
+                "value": int(contract.minting_cost(-1)),
+            }
+        )
     hundredth_nft_cost_as_int = int(contract.minting_cost(-1))
     assert (
         first_nft_cost_as_int < hundredth_nft_cost_as_int
     ), "The first and hundredth nft are the same price"
+
+
+def test_mint_cost_function_every_hundred_nfts():
+    contract = deploy.deploy_poor_apes_contract(19000)
+    assert int(contract.minting_cost(0)) == int(price_for_first_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(0).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(99)) == int(price_for_99th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(99).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(199)) == int(price_for_199th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(199).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(299)) == int(price_for_299th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(299).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(399)) == int(price_for_399th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(399).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(499)) == int(price_for_499th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(499).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(599)) == int(price_for_599th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(599).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(699)) == int(price_for_699th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(699).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(700)) == int(price_for_700th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(700).to("ether"))
+        + ")"
+    )
+    assert int(contract.minting_cost(800)) == int(price_for_800th_nft), (
+        "The NFT at position has the wrong price (it should be "
+        + str(contract.minting_cost(800).to("ether"))
+        + ")"
+    )
+
+
+def test_can_not_mint_701_nfts():
+    contract = deploy.deploy_poor_apes_contract(19000)
+    contract.setPresale(0)
+    first_nft_cost_as_int = int(contract.minting_cost(-1))
+    for i in range(698):
+        print(i)
+        contract.mintNFT({"from": accounts[i], "value": contract.minting_cost(-1)})
+    contract.mintNFT({"from": accounts[699], "value": contract.minting_cost(-1)})
+    with reverts():
+        contract.mintNFT({"from": accounts[700], "value": contract.minting_cost(-1)})

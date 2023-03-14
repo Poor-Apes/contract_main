@@ -27,6 +27,9 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
     mapping(uint256 => uint256) private _nftType;
     uint256 public maxMintAmount = 3;
     uint256 public btc_price_in_usd = 20000 * 10 ** 8;
+    // Minting curves
+    uint256 public investor_minting_curve = 569900000000000000; // 0.5699
+    uint256 public mover_minting_curve = 285000000000000000; //0.285
 
     /*
      * This needs to be the 46 alphanumeric string in the ipfs URL
@@ -107,13 +110,12 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
         if (_nft_number == -1) {
             nft_number = int256(_tokenIds.current());
         }
-        if (_nft_number > max_supply) {
-            nft_number = max_supply;
+        if (_nft_number >= max_supply - 1) {
+            nft_number = max_supply - 1;
         }
-        // in desmos z = 1.0
         int256 z = 85000000000000000; //  0.085
-        int256 a = 100000000000000000; //  0.1
-        int256 b = 1067000000000000000; //  1.067
+        int256 a = 95000000000000000; //  0.095
+        int256 b = 1068000000000000000; //  1.068
         int256 c = -10000000000000000000; // -10
         //int256 d = 100000000000000000; //  0.01
         int256 cost = PRBMathSD59x18.mul(
@@ -142,13 +144,10 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     function getBTCPrice() public view returns (uint256) {
         (, int256 answer, , , ) = priceFeed.latestRoundData();
-        // OLD & INCORRECT!!
-        // it's already to 8 decimal places, this adds 10 more
-        //return uint256(answer * 10000000000);
-        // it's already to
-        //return uint256(answer / (10 ** 2));
         return uint256(answer);
     }
+
+    function is_investor(int256 _nft_number) public view returns (int256) {}
 
     function withdraw() public payable onlyOwner {
         uint256 balance = address(this).balance;
