@@ -53,11 +53,6 @@ def test_mint_with_contract_btc_above_20k(contract_btc_above_20k):
         contract_btc_above_20k.mintNFT({"from": accounts[1]})
 
 
-def test_mint_when_not_on_whitelist(contract):
-    with reverts("You are not on the whitelist"):
-        contract.mintNFT({"from": accounts[1]})
-
-
 def test_add_to_whitelist_when_owner(contract):
     with reverts("The owner can not be added to the whitelist"):
         contract.addToWhiteList(accounts[0], {"from": accounts[0]})
@@ -68,7 +63,7 @@ def test_add_buyer_to_whitelist(contract):
         contract.addToWhiteList(accounts[1], {"from": accounts[1]})
 
 
-def test_mint_when_added_and_then_removed_from_whitelist(contract):
+def test_added_and_then_removed_from_whitelist(contract):
     assert (
         contract.isInWhiteList(accounts[1]) == False,
         "The buyers account should not be on the white list already",
@@ -83,8 +78,6 @@ def test_mint_when_added_and_then_removed_from_whitelist(contract):
         contract.isInWhiteList(accounts[1]) == False,
         "The buyers account should not be on the white list",
     )
-    with reverts("You are not in the whitelist"):
-        contract.mintNFT({"from": accounts[1]})
 
 
 def test_mint_when_on_whitelist(contract):
@@ -97,7 +90,7 @@ def test_mint_when_on_whitelist(contract):
         contract.balanceOf(accounts[1]) == 0,
         "Buyer wallet already has a Poor Ape NFT in it",
     )
-    contract.mintNFT({"from": accounts[1]})
+    contract.mintNFT({"from": accounts[1], "value": contract.minting_cost(-1)})
     assert (
         contract.balanceOf(accounts[1]) == 1,
         "Buyer wallet should have an NFT in it after minting",
@@ -110,10 +103,8 @@ def test_mint_when_on_whitelist(contract):
 
 
 def test_mint(contract):
-    # 1. Disable presale
-    contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(0))
-    # 2. Make sure the initial minting cost is correct
+    # 1. Make sure the initial minting cost is correct
     assert (
         int(contract.minting_cost(-1)) == first_nft_cost_as_int,
         "The initial miniting cost of "
@@ -122,32 +113,32 @@ def test_mint(contract):
         + str(contract.minting_cost(-1))
         + "]",
     )
-    # 3. The buyer doesn't already have an NFT
+    # 2. The buyer doesn't already have an NFT
     assert (
         contract.balanceOf(accounts[1]) == 0,
         "Buyer wallet already has a Poor Ape NFT in it",
     )
-    # 4. Check buyer's initial ETH
+    # 3. Check buyer's initial ETH
     assert (
         accounts[1].balance() == Wei("1000 ether"),
         "Buyer wallet does not have 1,000 eth in it",
     )
-    # 5. Mint less than the mint ammount
+    # 4. Mint less than the mint ammount
     with reverts("More ETH required to mint NFT"):
         contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int - 1})
-    # 6. Make sure the buyer hasn't been charged
+    # 5. Make sure the buyer hasn't been charged
     assert (
         accounts[1].balance() == Wei("1000 ether"),
         "Buyer wallet does not have 1,000 eth in it",
     )
-    # 7. Check the buyer didn't get the NFT
+    # 6. Check the buyer didn't get the NFT
     assert (
         contract.balanceOf(accounts[1]) == 0,
         "Buyer wallet already has a Poor Ape NFT in it",
     )
-    # 8. Mint with the correct price
+    # 7. Mint with the correct price
     contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
-    # 9. The buyer got the NFT
+    # 8. The buyer got the NFT
     assert (
         contract.balanceOf(accounts[1]) == 1
     ), "Buyer wallet should have a Poor Ape NFT in it"
@@ -185,7 +176,6 @@ def test_tokenuri_function_returns_json(contract):
 
 
 def test_max_mint_for_account(contract):
-    contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(0))
     contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
     with reverts("Use another account if you want to mint again"):
@@ -193,7 +183,6 @@ def test_max_mint_for_account(contract):
 
 
 def test_minting_cost_get_more_expensive(contract):
-    contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(-1))
     for i in range(100):
         print(i)
@@ -264,7 +253,6 @@ def test_mint_cost_function_every_hundred_nfts(contract):
 
 
 def test_can_not_mint_701_nfts(contract):
-    contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(-1))
     for i in range(699):
         contract.mintNFT({"from": accounts[i], "value": contract.minting_cost(-1)})
@@ -272,7 +260,6 @@ def test_can_not_mint_701_nfts(contract):
         contract.mintNFT({"from": accounts[700], "value": contract.minting_cost(-1)})
 
 
-# remove presale
 # test withdraws
 # add WL logic
 # add types logic

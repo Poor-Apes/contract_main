@@ -22,8 +22,8 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     int256 public max_supply = 700;
     string public baseTokenURI;
-    bool public presale = true;
     mapping(address => bool) public whitelisted;
+    //address public whitelist_already_applied;
     mapping(uint256 => uint256) private _nftType;
     uint256 public btc_price_in_usd = 20000 * 10 ** 8;
     // Minting curves
@@ -74,14 +74,10 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
             "Use another account if you want to mint again"
         );
 
-        if (presale) {
-            require(isInWhiteList(msg.sender), "You are not on the whitelist");
-        } else {
-            require(
-                minting_cost(-1) <= int256(msg.value),
-                "More ETH required to mint NFT"
-            );
-        }
+        require(
+            minting_cost(-1) <= int256(msg.value),
+            "More ETH required to mint NFT"
+        );
 
         // 0 > 699 = 700
         require(
@@ -158,10 +154,6 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
         uint256 balance = address(this).balance;
         require(balance > 0, "No ether to withdraw");
         payable(owner()).transfer(balance);
-    }
-
-    function setPresale(bool _state) public onlyOwner {
-        presale = _state;
     }
 
     function addToWhiteList(address _addr) public onlyOwner {
