@@ -24,6 +24,19 @@ price_for_699th_nft = convert.to_int("2.46 ether")
 price_for_700th_nft = convert.to_int("2.46 ether")
 price_for_800th_nft = convert.to_int("2.46 ether")
 
+# FIXTURES
+
+
+@pytest.fixture
+def contract():
+    return deploy.deploy_poor_apes_contract(19000)
+
+
+@pytest.fixture
+def contract_btc_above_20k():
+    return deploy.deploy_poor_apes_contract(22000)
+
+
 # $ brownie console
 # >>> contract = deploy.deploy_poor_apes_contract(19000)
 
@@ -31,37 +44,31 @@ price_for_800th_nft = convert.to_int("2.46 ether")
 # buyer_account = accounts[1]
 
 
-def test_mint_sets_BTC_USD_value_corecctly():
-    contract = deploy.deploy_poor_apes_contract(22000)
-    assert contract.getBTCPrice() == 22000 * 10**8
+def test_mint_sets_BTC_USD_value_corecctly(contract_btc_above_20k):
+    assert contract_btc_above_20k.getBTCPrice() == 22000 * 10**8
 
 
-def test_mint_with_btc_above_20k():
-    contract = deploy.deploy_poor_apes_contract(22000)
+def test_mint_with_contract_btc_above_20k(contract_btc_above_20k):
     with reverts("BTC is not under 20k usd"):
-        tx = contract.mintNFT({"from": accounts[1]})
+        contract_btc_above_20k.mintNFT({"from": accounts[1]})
 
 
-def test_mint_when_not_on_whitelist():
-    contract = deploy.deploy_poor_apes_contract(19000)
-    with reverts("You are not in the whitelist"):
+def test_mint_when_not_on_whitelist(contract):
+    with reverts("You are not on the whitelist"):
         contract.mintNFT({"from": accounts[1]})
 
 
-def test_add_to_whitelist_when_owner():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_add_to_whitelist_when_owner(contract):
     with reverts("The owner can not be added to the whitelist"):
         contract.addToWhiteList(accounts[0], {"from": accounts[0]})
 
 
-def test_add_buyer_to_whitelist():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_add_buyer_to_whitelist(contract):
     with reverts():
         contract.addToWhiteList(accounts[1], {"from": accounts[1]})
 
 
-def test_mint_when_added_and_then_removed_from_whitelist():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_mint_when_added_and_then_removed_from_whitelist(contract):
     assert (
         contract.isInWhiteList(accounts[1]) == False,
         "The buyers account should not be on the white list already",
@@ -80,8 +87,7 @@ def test_mint_when_added_and_then_removed_from_whitelist():
         contract.mintNFT({"from": accounts[1]})
 
 
-def test_mint_when_on_whitelist():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_mint_when_on_whitelist(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
     assert (
         accounts[1].balance() == Wei("1000 ether"),
@@ -103,8 +109,7 @@ def test_mint_when_on_whitelist():
     )
 
 
-def test_mint():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_mint(contract):
     # 1. Disable presale
     contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(0))
@@ -160,8 +165,7 @@ def test_mint():
 
 
 @pytest.mark.skip(reason="takes too long")
-def test_tokenuri_function_returns_json():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_tokenuri_function_returns_json(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
     contract.mintNFT({"from": accounts[1]})
     contract.mintNFT({"from": accounts[1]})
@@ -180,21 +184,19 @@ def test_tokenuri_function_returns_json():
     assert True
 
 
-def test_max_mint_for_account():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_max_mint_for_account(contract):
     contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(0))
-    for i in range(3):
-        contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
-    with reverts("Dont be greedy!"):
+    contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
+    with reverts("Use another account if you want to mint again"):
         contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
 
 
-def test_minting_cost_get_more_expensive():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_minting_cost_get_more_expensive(contract):
     contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(-1))
     for i in range(100):
+        print(i)
         minter_acc = accounts[i + 1]
         contract.mintNFT(
             {
@@ -208,8 +210,7 @@ def test_minting_cost_get_more_expensive():
     ), "The first and hundredth nft are the same price"
 
 
-def test_mint_cost_function_every_hundred_nfts():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_mint_cost_function_every_hundred_nfts(contract):
     assert int(contract.minting_cost(0)) == int(price_for_first_nft), (
         "The NFT at position has the wrong price (it should be "
         + str(contract.minting_cost(0).to("ether"))
@@ -262,13 +263,18 @@ def test_mint_cost_function_every_hundred_nfts():
     )
 
 
-def test_can_not_mint_701_nfts():
-    contract = deploy.deploy_poor_apes_contract(19000)
+def test_can_not_mint_701_nfts(contract):
     contract.setPresale(0)
     first_nft_cost_as_int = int(contract.minting_cost(-1))
-    for i in range(698):
-        print(i)
+    for i in range(699):
         contract.mintNFT({"from": accounts[i], "value": contract.minting_cost(-1)})
-    contract.mintNFT({"from": accounts[699], "value": contract.minting_cost(-1)})
     with reverts():
         contract.mintNFT({"from": accounts[700], "value": contract.minting_cost(-1)})
+
+
+# remove presale
+# test withdraws
+# add WL logic
+# add types logic
+# add pre-reveal logic
+# add transfer logic

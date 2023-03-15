@@ -25,7 +25,6 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
     bool public presale = true;
     mapping(address => bool) public whitelisted;
     mapping(uint256 => uint256) private _nftType;
-    uint256 public maxMintAmount = 3;
     uint256 public btc_price_in_usd = 20000 * 10 ** 8;
     // Minting curves
     uint256 public investor_minting_curve = 569900000000000000; // 0.5699
@@ -68,10 +67,15 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
     function mintNFT() public payable returns (uint256) {
         require(getBTCPrice() < btc_price_in_usd, "BTC is not under 20k usd");
 
-        require(balanceOf(msg.sender) < maxMintAmount, "Dont be greedy!");
+        // can only mint one NFT at a time because of the dynamic calculations
+        // that occure with the exponential curve & Discount Card (WL)
+        require(
+            balanceOf(msg.sender) < 1,
+            "Use another account if you want to mint again"
+        );
 
         if (presale) {
-            require(isInWhiteList(msg.sender), "You are not in the whitelist");
+            require(isInWhiteList(msg.sender), "You are not on the whitelist");
         } else {
             require(
                 minting_cost(-1) <= int256(msg.value),
@@ -79,8 +83,9 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
             );
         }
 
+        // 0 > 699 = 700
         require(
-            _tokenIds.current() < uint256(max_supply),
+            _tokenIds.current() < uint256(max_supply - 1),
             "All genesis NFTs minted"
         );
 
