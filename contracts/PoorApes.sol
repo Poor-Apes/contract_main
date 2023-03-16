@@ -3,6 +3,7 @@
 pragma solidity ^0.8.4;
 
 // make changes to the brownie config to import these libraries
+import "@chirulabs/contracts/ERC721A.sol";
 import "@prb/contracts/PRBMathSD59x18.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -11,7 +12,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
+contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     using PRBMathSD59x18 for int256;
 
     using SafeMath for uint256;
@@ -22,8 +23,8 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     int256 public max_supply = 700;
     string public baseTokenURI;
-    mapping(address => bool) public whitelisted;
-    //address public whitelist_already_applied;
+    mapping(address => bool) public whitelist;
+    mapping(address => bool) public whitelist_used;
     mapping(uint256 => uint256) private _nftType;
     uint256 public btc_price_in_usd = 20000 * 10 ** 8;
     // Minting curves
@@ -41,7 +42,7 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
     constructor(
         address _priceFeed,
         string memory _IPFS_JSON_Folder
-    ) ERC721("Poor Apes - Genesis", "POORG") {
+    ) ERC721A("Poor Apes - Genesis", "PA-G") {
         require(
             bytes(_IPFS_JSON_Folder).length == 46,
             "IPFS folder incorrect length"
@@ -72,14 +73,12 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
             "More ETH required to mint NFT"
         );
 
-        // 0 > 699 = 700
-        require(
-            _tokenIds.current() < uint256(max_supply - 1),
-            "All genesis NFTs minted"
-        );
+        uint256 newItemId = _nextTokenId();
 
-        uint256 newItemId = _tokenIds.current();
-        _safeMint(msg.sender, newItemId);
+        // 0 > 699 = 700
+        require(newItemId < uint256(max_supply - 1), "All genesis NFTs minted");
+
+        _safeMint(msg.sender, 1);
 
         uint256 randomNumber = uint256(
             keccak256(abi.encodePacked(block.timestamp, msg.sender, newItemId))
@@ -93,8 +92,6 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
             _nftType[newItemId] = 3;
         }
 
-        _tokenIds.increment();
-
         return newItemId;
     }
 
@@ -102,7 +99,7 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
     function minting_cost(int256 _nft_number) public view returns (int256) {
         int256 nft_number = _nft_number;
         if (_nft_number == -1) {
-            nft_number = int256(_tokenIds.current());
+            nft_number = int256(_nextTokenId());
         }
         if (_nft_number >= max_supply - 1) {
             nft_number = max_supply - 1;
@@ -141,7 +138,11 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
         return uint256(answer);
     }
 
+    function is_mover(int256 _nft_number) public view returns (int256) {}
+
     function is_investor(int256 _nft_number) public view returns (int256) {}
+
+    function is_holder(int256 _nft_number) public view returns (int256) {}
 
     function withdraw() public payable onlyOwner {
         uint256 balance = address(this).balance;
@@ -154,15 +155,15 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
             _addr != owner(),
             "The owner can not be added to the whitelist"
         );
-        whitelisted[_addr] = true;
+        whitelist[_addr] = true;
     }
 
     function removeFromWhiteList(address _addr) public onlyOwner {
-        whitelisted[_addr] = false;
+        whitelist[_addr] = false;
     }
 
     function isInWhiteList(address _addr) public view returns (bool) {
-        return whitelisted[_addr] || _addr == owner();
+        return whitelist[_addr];
     }
 
     function uint2str(uint256 _i) internal pure returns (string memory str) {

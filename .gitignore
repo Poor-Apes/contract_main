@@ -8,3 +8,4 @@ brownie-config.yaml.*
 .deps/
 build/
 reports/
+node_modules/

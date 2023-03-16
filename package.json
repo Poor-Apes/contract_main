@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "erc721a": "^4.2.3"
+  },
+  "dependencies": {
+    "@prb/math": "^3.3.0"
+  }
+}
