@@ -4,7 +4,7 @@ import json
 import pytest
 import requests
 from brownie import reverts
-from brownie import Wei, accounts, network, config, convert, MockV3Aggregator, PoorApes
+from brownie import Wei, accounts, network, config, convert
 from brownie.exceptions import VirtualMachineError
 
 current_wd = os.path.dirname(os.path.realpath(__file__))
@@ -43,26 +43,33 @@ def contract_btc_above_20k():
 # minter_account = accounts[0]
 # buyer_account = accounts[1]
 
+# TESTS
 
+
+@pytest.mark.mint
 def test_mint_sets_BTC_USD_value_corecctly(contract_btc_above_20k):
     assert contract_btc_above_20k.getBTCPrice() == 22000 * 10**8
 
 
+@pytest.mark.mint
 def test_mint_with_contract_btc_above_20k(contract_btc_above_20k):
     with reverts("BTC is not under 20k usd"):
         contract_btc_above_20k.mintNFT({"from": accounts[1]})
 
 
+@pytest.mark.mint
 def test_add_to_whitelist_when_owner(contract):
     with reverts("The owner can not be added to the whitelist"):
         contract.addToWhiteList(accounts[0], {"from": accounts[0]})
 
 
+@pytest.mark.mint
 def test_add_buyer_to_whitelist(contract):
     with reverts():
         contract.addToWhiteList(accounts[1], {"from": accounts[1]})
 
 
+@pytest.mark.mint
 def test_added_and_then_removed_from_whitelist(contract):
     assert (
         contract.isInWhiteList(accounts[1]) == False,
@@ -80,6 +87,7 @@ def test_added_and_then_removed_from_whitelist(contract):
     )
 
 
+@pytest.mark.mint
 def test_mint_when_on_whitelist(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
     assert (
@@ -102,6 +110,7 @@ def test_mint_when_on_whitelist(contract):
     )
 
 
+@pytest.mark.mint
 def test_mint(contract):
     first_nft_cost_as_int = int(contract.minting_cost(0))
     # 1. Make sure the initial minting cost is correct
@@ -156,6 +165,7 @@ def test_mint(contract):
 
 
 @pytest.mark.skip(reason="takes too long")
+@pytest.mark.mint
 def test_tokenuri_function_returns_json(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
     contract.mintNFT({"from": accounts[1]})
@@ -175,13 +185,7 @@ def test_tokenuri_function_returns_json(contract):
     assert True
 
 
-def test_max_mint_for_account(contract):
-    first_nft_cost_as_int = int(contract.minting_cost(0))
-    contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
-    with reverts("Use another account if you want to mint again"):
-        contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
-
-
+@pytest.mark.mint
 def test_minting_cost_get_more_expensive(contract):
     first_nft_cost_as_int = int(contract.minting_cost(-1))
     for i in range(100):
@@ -199,6 +203,8 @@ def test_minting_cost_get_more_expensive(contract):
     ), "The first and hundredth nft are the same price"
 
 
+@pytest.mark.mint
+@pytest.mark.long
 def test_mint_cost_function_every_hundred_nfts(contract):
     assert int(contract.minting_cost(0)) == int(price_for_first_nft), (
         "The NFT at position has the wrong price (it should be "
@@ -252,6 +258,8 @@ def test_mint_cost_function_every_hundred_nfts(contract):
     )
 
 
+@pytest.mark.mint
+@pytest.mark.long
 def test_can_not_mint_701_nfts(contract):
     first_nft_cost_as_int = int(contract.minting_cost(-1))
     for i in range(699):

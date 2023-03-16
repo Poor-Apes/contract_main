@@ -67,13 +67,6 @@ contract PoorApes is ERC721Enumerable, Ownable, ReentrancyGuard {
     function mintNFT() public payable returns (uint256) {
         require(getBTCPrice() < btc_price_in_usd, "BTC is not under 20k usd");
 
-        // can only mint one NFT at a time because of the dynamic calculations
-        // that occure with the exponential curve & Discount Card (WL)
-        require(
-            balanceOf(msg.sender) < 1,
-            "Use another account if you want to mint again"
-        );
-
         require(
             minting_cost(-1) <= int256(msg.value),
             "More ETH required to mint NFT"
