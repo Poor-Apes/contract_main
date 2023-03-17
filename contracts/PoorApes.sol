@@ -65,18 +65,18 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     }
 
     function mint() public payable returns (uint256) {
-        mint_multi(1);
+        mint(1);
     }
 
     // Upload the images folder
     // JSON files don't need extensions
     // The tokenURI is the location of the JSON files (without the .json extension)
     // (Example: https://ipfs.io/ipfs/QmdRoeMsnbQrQXB8j4Q8iGzN14a65R1PahVPoZhJhw3KtG/2)
-    function mint_multi(int256 _num_nfts) public payable returns (uint256) {
+    function mint(uint256 _num_nfts) public payable returns (uint256) {
         require(getBTCPrice() < btc_price_in_usd, "BTC is not under 20k usd");
 
         require(
-            minting_cost(-1) <= int256(msg.value),
+            mint_cost(-1) <= int256(msg.value),
             "More ETH required to mint NFT"
         );
 
@@ -109,12 +109,13 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         return newItemId;
     }
 
+    function mint_cost() public view returns (int256) {
+        return mint_cost(int256(_nextTokenId()));
+    }
+
     // Ref: https://www.desmos.com/calculator/n21xiqgmxv
-    function minting_cost(int256 _nft_number) public view returns (int256) {
+    function mint_cost(int256 _nft_number) public view returns (int256) {
         int256 nft_number = _nft_number;
-        if (_nft_number == -1) {
-            nft_number = int256(_nextTokenId());
-        }
         if (_nft_number >= max_supply - 1) {
             nft_number = max_supply - 1;
         }

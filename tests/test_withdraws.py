@@ -35,7 +35,7 @@ def test_withdraw_from_non_admin_account(contract):
 @pytest.mark.withdraw
 def test_mint_and_then_withdraw(contract):
     for x in range(10):
-        contract.mint({"from": accounts[1], "value": int(contract.minting_cost(-1))})
+        contract.mint({"from": accounts[1], "value": int(contract.mint_cost(-1))})
     # The deployers wallet balance BEFORE withdraw
     assert (
         accounts[0].balance() < Wei("1000 ether"),
