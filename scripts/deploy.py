@@ -1,4 +1,5 @@
 import sys
+from random import randrange
 from brownie import Wei, accounts, Contract, network, config, MockV3Aggregator, PoorApes
 
 
@@ -11,6 +12,7 @@ def deploy_poor_apes_contract(BTC_USD_price=None):
         poor_apes_contract = PoorApes.deploy(
             price_feed_address,
             config["networks"][network.show_active()]["nft_json_folder"],
+            randrange(10000000000000000000000000000000000),
             {"from": account},
         )
         print(poor_apes_contract.address)

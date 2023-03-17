@@ -22,6 +22,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     AggregatorV3Interface public priceFeed;
 
     int256 public max_supply = 700;
+    int256 public random_number = 0;
     string public baseTokenURI;
     mapping(address => bool) public whitelist;
     mapping(address => bool) public whitelist_used;
@@ -41,7 +42,8 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
      */
     constructor(
         address _priceFeed,
-        string memory _IPFS_JSON_Folder
+        string memory _IPFS_JSON_Folder,
+        int256 _random_number
     ) ERC721A("Poor Apes - Genesis", "PA-G") {
         require(
             bytes(_IPFS_JSON_Folder).length == 46,
@@ -51,6 +53,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         baseTokenURI = string(
             abi.encodePacked("https://ipfs.io/ipfs/", _IPFS_JSON_Folder, "/")
         );
+        random_number = random_number;
     }
 
     /**
@@ -81,8 +84,15 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, 1);
 
         uint256 randomNumber = uint256(
-            keccak256(abi.encodePacked(block.timestamp, msg.sender, newItemId))
-        );
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp,
+                    msg.sender,
+                    newItemId,
+                    random_number
+                )
+            )
+        ) % 100;
 
         if (randomNumber % 10 == 0) {
             _nftType[newItemId] = 1;
