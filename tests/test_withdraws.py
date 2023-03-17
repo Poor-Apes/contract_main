@@ -7,29 +7,7 @@ current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
 sys.path.append(scripts_path)
 
-import deploy
-
-# FIXTURES
-
-
-@pytest.fixture
-def contract():
-    return deploy.deploy_poor_apes_contract(19000)
-
-
-# TESTS
-
-
-@pytest.mark.withdraw
-def test_withdraw_when_contract_empty(contract):
-    with reverts("No ether to withdraw"):
-        contract.withdraw({"from": accounts[0]})
-
-
-@pytest.mark.withdraw
-def test_withdraw_from_non_admin_account(contract):
-    with reverts("Ownable: caller is not the owner"):
-        contract.withdraw({"from": accounts[1]})
+from common import contract
 
 
 @pytest.mark.withdraw

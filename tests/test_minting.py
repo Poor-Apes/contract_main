@@ -11,7 +11,7 @@ current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
 sys.path.append(scripts_path)
 
-import deploy
+from common import contract, contract_btc_above_20k
 
 price_for_first_nft = convert.to_int("0.05 ether")
 price_for_99th_nft = convert.to_int("0.09 ether")
@@ -23,18 +23,6 @@ price_for_599th_nft = convert.to_int("1.41 ether")
 price_for_699th_nft = convert.to_int("2.46 ether")
 price_for_700th_nft = convert.to_int("2.46 ether")
 price_for_800th_nft = convert.to_int("2.46 ether")
-
-# FIXTURES
-
-
-@pytest.fixture
-def contract():
-    return deploy.deploy_poor_apes_contract(19000)
-
-
-@pytest.fixture
-def contract_btc_above_20k():
-    return deploy.deploy_poor_apes_contract(22000)
 
 
 # $ brownie console
