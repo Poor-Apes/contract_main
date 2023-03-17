@@ -54,7 +54,7 @@ def test_mint_sets_BTC_USD_value_corecctly(contract_btc_above_20k):
 @pytest.mark.mint
 def test_mint_with_contract_btc_above_20k(contract_btc_above_20k):
     with reverts("BTC is not under 20k usd"):
-        contract_btc_above_20k.mintNFT({"from": accounts[1]})
+        contract_btc_above_20k.mint({"from": accounts[1]})
 
 
 @pytest.mark.mint
@@ -87,6 +87,7 @@ def test_added_and_then_removed_from_whitelist(contract):
     )
 
 
+# NOTE: This needs to be re-done
 @pytest.mark.mint
 def test_mint_when_on_whitelist(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
@@ -98,7 +99,7 @@ def test_mint_when_on_whitelist(contract):
         contract.balanceOf(accounts[1]) == 0,
         "Buyer wallet already has a Poor Ape NFT in it",
     )
-    contract.mintNFT({"from": accounts[1], "value": contract.minting_cost(-1)})
+    contract.mint({"from": accounts[1], "value": contract.minting_cost(-1)})
     assert (
         contract.balanceOf(accounts[1]) == 1,
         "Buyer wallet should have an NFT in it after minting",
@@ -134,7 +135,7 @@ def test_mint(contract):
     )
     # 4. Mint less than the mint ammount
     with reverts("More ETH required to mint NFT"):
-        contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int - 1})
+        contract.mint({"from": accounts[1], "value": first_nft_cost_as_int - 1})
     # 5. Make sure the buyer hasn't been charged
     assert (
         accounts[1].balance() == Wei("1000 ether"),
@@ -146,7 +147,7 @@ def test_mint(contract):
         "Buyer wallet already has a Poor Ape NFT in it",
     )
     # 7. Mint with the correct price
-    contract.mintNFT({"from": accounts[1], "value": first_nft_cost_as_int})
+    contract.mint({"from": accounts[1], "value": first_nft_cost_as_int})
     # 8. The buyer got the NFT
     assert (
         contract.balanceOf(accounts[1]) == 1
@@ -168,8 +169,8 @@ def test_mint(contract):
 @pytest.mark.mint
 def test_tokenuri_function_returns_json(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
-    contract.mintNFT({"from": accounts[1]})
-    contract.mintNFT({"from": accounts[1]})
+    contract.mint({"from": accounts[1]})
+    contract.mint({"from": accounts[1]})
     uri_of_json = contract.tokenURI(1)
     nft_json = requests.get(uri_of_json).json()
     assert "name" in nft_json, "The name key is not in the JSON"
@@ -191,7 +192,7 @@ def test_minting_cost_get_more_expensive(contract):
     for i in range(100):
         print(i)
         minter_acc = accounts[i + 1]
-        contract.mintNFT(
+        contract.mint(
             {
                 "from": minter_acc,
                 "value": int(contract.minting_cost(-1)),
@@ -263,12 +264,11 @@ def test_mint_cost_function_every_hundred_nfts(contract):
 def test_can_not_mint_701_nfts(contract):
     first_nft_cost_as_int = int(contract.minting_cost(-1))
     for i in range(699):
-        contract.mintNFT({"from": accounts[i], "value": contract.minting_cost(-1)})
+        contract.mint({"from": accounts[i], "value": contract.minting_cost(-1)})
     with reverts():
-        contract.mintNFT({"from": accounts[700], "value": contract.minting_cost(-1)})
+        contract.mint({"from": accounts[700], "value": contract.minting_cost(-1)})
 
 
-# test withdraws
 # add WL logic
 # add types logic
 # add pre-reveal logic

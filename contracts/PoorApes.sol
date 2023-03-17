@@ -64,11 +64,15 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         return baseTokenURI;
     }
 
+    function mint() public payable returns (uint256) {
+        mint_multi(1);
+    }
+
     // Upload the images folder
     // JSON files don't need extensions
     // The tokenURI is the location of the JSON files (without the .json extension)
     // (Example: https://ipfs.io/ipfs/QmdRoeMsnbQrQXB8j4Q8iGzN14a65R1PahVPoZhJhw3KtG/2)
-    function mintNFT() public payable returns (uint256) {
+    function mint_multi(int256 _num_nfts) public payable returns (uint256) {
         require(getBTCPrice() < btc_price_in_usd, "BTC is not under 20k usd");
 
         require(
@@ -81,7 +85,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         // 0 > 699 = 700
         require(newItemId < uint256(max_supply - 1), "All genesis NFTs minted");
 
-        _safeMint(msg.sender, 1);
+        _safeMint(msg.sender, _num_nfts);
 
         uint256 randomNumber = uint256(
             keccak256(
