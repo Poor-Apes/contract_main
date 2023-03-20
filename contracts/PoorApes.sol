@@ -21,9 +21,13 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     Counters.Counter private _tokenIds;
     AggregatorV3Interface public priceFeed;
 
+    // TODO: Set ALL to start with an underscore
     int256 public max_supply = 700;
     int256 public random_number = 0;
     string public baseTokenURI;
+    bool public marketing_has_withdrawn = false;
+    address public _marketing_address;
+    uint256 public marketing_budget_in_ETH = 10 * 10 ** 18;
     mapping(address => bool) public whitelist;
     mapping(address => bool) public whitelist_used;
     mapping(uint256 => uint256) private _nftType;
@@ -42,6 +46,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
      */
     constructor(
         address _priceFeed,
+        address marketing_address,
         string memory _IPFS_JSON_Folder,
         int256 _random_number
     ) ERC721A("Poor Apes - Genesis", "PA-G") {
@@ -53,6 +58,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         baseTokenURI = string(
             abi.encodePacked("https://ipfs.io/ipfs/", _IPFS_JSON_Folder, "/")
         );
+        _marketing_address = marketing_address;
         random_number = random_number;
     }
 
@@ -159,12 +165,6 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
 
     function is_holder(int256 _nft_number) public view returns (int256) {}
 
-    function withdraw() public payable onlyOwner {
-        uint256 balance = address(this).balance;
-        require(balance > 0, "No ether to withdraw");
-        payable(owner()).transfer(balance);
-    }
-
     function addToWhiteList(address _addr) public onlyOwner {
         require(
             _addr != owner(),
@@ -199,5 +199,38 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
             j /= 10;
         }
         str = string(bstr);
+    }
+
+    function withdraw_owner() public payable onlyOwner {
+        uint256 balance = address(this).balance;
+        require(
+            _nextTokenId() == uint256(max_supply - 1),
+            "Mint has not finished"
+        );
+        require(
+            marketing_has_withdrawn == true,
+            "Marketing needs to withdraw first"
+        );
+        require(balance > 0, "No ether to withdraw");
+        payable(owner()).transfer(balance);
+    }
+
+    function withdraw_marketing() public payable {
+        uint256 balance = address(this).balance;
+        require(
+            msg.sender == _marketing_address,
+            "Only marketing can call this function"
+        );
+        require(
+            _nextTokenId() == uint256(max_supply - 1),
+            "Mint has to finish"
+        );
+        require(
+            marketing_has_withdrawn == false,
+            "Marketing has already withdrawn"
+        );
+        require(balance > 0, "No ether to withdraw");
+        marketing_has_withdrawn = true;
+        payable(owner()).transfer(marketing_budget_in_ETH);
     }
 }

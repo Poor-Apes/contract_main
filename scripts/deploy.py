@@ -7,10 +7,11 @@ def deploy_poor_apes_contract(BTC_USD_price=None):
     if network.show_active() == "development" and BTC_USD_price == None:
         print("You need to pass a BTC_USD price")
     else:
-        account = get_account()
+        account = get_owner_account()
         price_feed_address = get_price_feed_address(account, int(BTC_USD_price))
         poor_apes_contract = PoorApes.deploy(
             price_feed_address,
+            get_marketing_account(),
             config["networks"][network.show_active()]["nft_json_folder"],
             randrange(10000000000000000000000000000000000),
             {"from": account},
@@ -19,11 +20,20 @@ def deploy_poor_apes_contract(BTC_USD_price=None):
         return poor_apes_contract
 
 
-def get_account():
+def get_owner_account():
     if network.show_active() == "development":
         return accounts[0]
     else:
         return accounts.add(config["wallets"]["from_key"])
+
+
+def get_marketing_account():
+    if network.show_active() == "development":
+        return accounts[1]
+    else:
+        return accounts.add(
+            config["networks"][network.show_active()]["marketing_address"]
+        )
 
 
 def get_price_feed_address(account, mock_value=None):
@@ -48,7 +58,7 @@ def adjust_BTC_USD_price(usd_price):
 
 
 def main(BTC_USD_price=None):
-    # BTC_USD_price = None
+    # (for when calling from the command line)
     if len(sys.argv) == 2 and sys.argv[1].isnumeric():
         BTC_USD_price = sys.argv[1]
     return deploy_poor_apes_contract(BTC_USD_price)

@@ -101,32 +101,37 @@ def test_mint_when_on_whitelist(contract):
 
 @pytest.mark.mint
 def test_mint(contract):
-    # 1. The buyer doesn't already have an NFT
+    # 1. The owner has spent ETH on rolling contract out
+    assert (
+        contract.balanceOf(accounts[0]) < Wei("1000 ether"),
+        "Owner did not spend any money rolling out the contract",
+    )
+    # 2. The buyer doesn't already have an NFT
     assert (
         contract.balanceOf(accounts[1]) == 0,
         "Buyer wallet already has a Poor Ape NFT in it",
     )
-    # 2. Check buyer's initial ETH
+    # 3. Check buyer's initial ETH
     assert (
         accounts[1].balance() == Wei("1000 ether"),
         "Buyer wallet does not have 1,000 eth in it",
     )
-    # 3. Mint less than the mint ammount
+    # 4. Mint less than the mint ammount
     with reverts("More ETH required to mint NFT"):
         contract.mint({"from": accounts[1], "value": contract.mint_cost() - 1})
-    # 4. Make sure the buyer hasn't been charged
+    # 5. Make sure the buyer hasn't been charged
     assert (
         accounts[1].balance() == Wei("1000 ether"),
         "Buyer wallet does not have 1,000 eth in it",
     )
-    # 5. Check the buyer didn't get the NFT
+    # 6. Check the buyer didn't get the NFT
     assert (
         contract.balanceOf(accounts[1]) == 0,
         "Buyer wallet already has a Poor Ape NFT in it",
     )
-    # 6. Mint with the correct price
+    # 7. Mint with the correct price
     contract.mint({"from": accounts[1], "value": contract.mint_cost()})
-    # 7. The buyer got the NFT
+    # 8. The buyer got the NFT
     assert (
         contract.balanceOf(accounts[1]) == 1
     ), "Buyer wallet should have a Poor Ape NFT in it"
