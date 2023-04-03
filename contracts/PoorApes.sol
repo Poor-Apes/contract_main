@@ -21,12 +21,16 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     Counters.Counter private _tokenIds;
     AggregatorV3Interface public priceFeed;
 
-    // TODO: Set ALL to start with an underscore
     int256 public max_supply = 700;
-    int256 public random_number = 0;
-    string public baseTokenURI;
+    int256 public max_batch = 5;
+    int256 public max_batch_wl = 2;
+    int256 public mint_price = 0;
+    int256 public mint_price_whitlist = 0;
+    bool public prereveal = true;
+    string public IPFS_JSON_Folder;
+    string private IPFS_prereveal_JSON_Folder;
     bool public marketing_has_withdrawn = false;
-    address public _marketing_address;
+    address public marketing_address;
     uint256 public marketing_budget_in_ETH = 10 * 10 ** 18;
     mapping(address => bool) public whitelist;
     mapping(address => bool) public whitelist_used;
@@ -46,20 +50,26 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
      */
     constructor(
         address _priceFeed,
-        address marketing_address,
+        address _marketing_address,
         string memory _IPFS_JSON_Folder,
-        int256 _random_number
+        string memory _IPFS_prereveal_JSON_Folder,
+        int256 _mint_price,
+        int256 _mint_price_whitlist
     ) ERC721A("Poor Apes - Genesis", "PA-G") {
         require(
             bytes(_IPFS_JSON_Folder).length == 46,
             "IPFS folder incorrect length"
         );
-        priceFeed = AggregatorV3Interface(_priceFeed);
-        baseTokenURI = string(
-            abi.encodePacked("https://ipfs.io/ipfs/", _IPFS_JSON_Folder, "/")
+        require(
+            bytes(_IPFS_prereveal_JSON_Folder).length == 46,
+            "IPFS pre-reveal folder incorrect length"
         );
-        _marketing_address = marketing_address;
-        random_number = random_number;
+        priceFeed = AggregatorV3Interface(_priceFeed);
+        IPFS_JSON_Folder = _IPFS_JSON_Folder;
+        IPFS_prereveal_JSON_Folder = _IPFS_prereveal_JSON_Folder;
+        marketing_address = _marketing_address;
+        mint_price = _mint_price;
+        mint_price_whitlist = _mint_price_whitlist;
     }
 
     /**
@@ -67,7 +77,12 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
      * token will be the concatenation of the 'baseURI' and the 'tokenId'
      */
     function _baseURI() internal view virtual override returns (string memory) {
-        return baseTokenURI;
+        string memory JSON_Folder = IPFS_prereveal_JSON_Folder;
+        if (prereveal == false) {
+            JSON_Folder = IPFS_JSON_Folder;
+        }
+        return
+            string(abi.encodePacked("https://ipfs.io/ipfs/", JSON_Folder, "/"));
     }
 
     function mint() public payable returns (uint256) {
@@ -82,8 +97,8 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         require(getBTCPrice() < btc_price_in_usd, "BTC is not under 20k usd");
 
         require(
-            mint_cost(-1) <= int256(msg.value),
-            "More ETH required to mint NFT"
+            mint_cost(int(_num_nfts)) <= int256(msg.value),
+            "More ETH required to mint"
         );
 
         uint256 newItemId = _nextTokenId();
@@ -93,64 +108,27 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
 
         _safeMint(msg.sender, _num_nfts);
 
-        uint256 randomNumber = uint256(
-            keccak256(
-                abi.encodePacked(
-                    block.timestamp,
-                    msg.sender,
-                    newItemId,
-                    random_number
-                )
-            )
-        ) % 100;
-
-        if (randomNumber % 10 == 0) {
-            _nftType[newItemId] = 1;
-        } else if (randomNumber % 3 == 0) {
-            _nftType[newItemId] = 2;
-        } else {
-            _nftType[newItemId] = 3;
+        if (isInWhiteList(msg.sender)) {
+            whitelist_used[msg.sender] = true;
         }
 
         return newItemId;
     }
 
     function mint_cost() public view returns (int256) {
-        return mint_cost(int256(_nextTokenId()));
+        return mint_cost(1);
     }
 
-    // Ref: https://www.desmos.com/calculator/n21xiqgmxv
-    function mint_cost(int256 _nft_number) public view returns (int256) {
-        int256 nft_number = _nft_number;
-        if (_nft_number >= max_supply - 1) {
-            nft_number = max_supply - 1;
-        }
-        int256 z = 85000000000000000; //  0.085
-        int256 a = 95000000000000000; //  0.095
-        int256 b = 1068000000000000000; //  1.068
-        int256 c = -10000000000000000000; // -10
-        //int256 d = 100000000000000000; //  0.01
-        int256 cost = PRBMathSD59x18.mul(
-            a,
-            b.pow(PRBMathSD59x18.mul(z, (nft_number * 1000000000000000000)) + c)
-        );
-        return ceiling_price(cost);
-    }
-
-    function ceiling_price(int256 cost) internal pure returns (int256 result) {
-        int256 scale = 1e16;
-        int256 max_whole = 57896044618658097711785492504343953926634992332820282019728790000000000000000;
-        require(cost <= max_whole);
-        unchecked {
-            int256 remainder = cost % scale;
-            if (remainder == 0) {
-                result = cost;
-            } else {
-                result = cost - remainder;
-                if (cost > 0) {
-                    result += scale;
-                }
-            }
+    function mint_cost(int256 _num_nfts) public view returns (int256) {
+        if (isInWhiteList(msg.sender) && whitelist_used[msg.sender] == false) {
+            require(
+                _num_nfts <= max_batch_wl,
+                "You can only mint up to 2 NFTs"
+            );
+            return mint_price_whitlist * _num_nfts;
+        } else {
+            require(_num_nfts <= max_batch, "You can only mint up to 5 NFTs");
+            return mint_price * _num_nfts;
         }
     }
 
@@ -158,12 +136,6 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         (, int256 answer, , , ) = priceFeed.latestRoundData();
         return uint256(answer);
     }
-
-    function is_mover(int256 _nft_number) public view returns (int256) {}
-
-    function is_investor(int256 _nft_number) public view returns (int256) {}
-
-    function is_holder(int256 _nft_number) public view returns (int256) {}
 
     function addToWhiteList(address _addr) public onlyOwner {
         require(
@@ -177,28 +149,12 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         whitelist[_addr] = false;
     }
 
-    function isInWhiteList(address _addr) public view returns (bool) {
-        return whitelist[_addr];
+    function disablePrereveal() public onlyOwner {
+        prereveal = false;
     }
 
-    function uint2str(uint256 _i) internal pure returns (string memory str) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint256 j = _i;
-        uint256 length;
-        while (j != 0) {
-            length++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(length);
-        uint256 k = length;
-        j = _i;
-        while (j != 0) {
-            bstr[--k] = bytes1(uint8(48 + (j % 10)));
-            j /= 10;
-        }
-        str = string(bstr);
+    function isInWhiteList(address _addr) public view returns (bool) {
+        return whitelist[_addr];
     }
 
     function withdraw_owner() public payable onlyOwner {
@@ -218,7 +174,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     function withdraw_marketing() public payable {
         uint256 balance = address(this).balance;
         require(
-            msg.sender == _marketing_address,
+            msg.sender == marketing_address,
             "Only marketing can call this function"
         );
         require(

@@ -59,6 +59,7 @@ def test_marketing_withdraw(contract):
 @pytest.mark.long
 def test_marketing_withdrawing_twice(contract):
     for x in range(699):
+        print(x)
         contract.mint({"from": accounts[x], "value": int(contract.mint_cost())})
     contract.withdraw_marketing({"from": accounts[1]})
     marketing_balance = accounts[1].balance()
@@ -76,6 +77,7 @@ def test_marketing_withdrawing_twice(contract):
 def test_marketing_withdraw_and_then_owner_withdraw(contract):
     owner_balance = accounts[0].balance()
     for x in range(699):
+        print(x)
         contract.mint({"from": accounts[x], "value": int(contract.mint_cost())})
     # Just double checking
     with reverts("Marketing needs to withdraw first"):

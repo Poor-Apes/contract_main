@@ -3,7 +3,9 @@ from random import randrange
 from brownie import Wei, accounts, Contract, network, config, MockV3Aggregator, PoorApes
 
 
-def deploy_poor_apes_contract(BTC_USD_price=None):
+def deploy_poor_apes_contract(BTC_USD_price=None, season=None):
+    if season == None:
+        season = "chicago"
     if network.show_active() == "development" and BTC_USD_price == None:
         print("You need to pass a BTC_USD price")
     else:
@@ -12,8 +14,10 @@ def deploy_poor_apes_contract(BTC_USD_price=None):
         poor_apes_contract = PoorApes.deploy(
             price_feed_address,
             get_marketing_account(),
-            config["networks"][network.show_active()]["nft_json_folder"],
-            randrange(10000000000000000000000000000000000),
+            get_json_folder(),
+            get_prereveal_json_folder(),
+            price_normal_as_wei(season),
+            price_wl_as_wei(season),
             {"from": account},
         )
         print(poor_apes_contract.address)
@@ -34,6 +38,14 @@ def get_marketing_account():
         return accounts.add(
             config["networks"][network.show_active()]["marketing_address"]
         )
+
+
+def get_json_folder():
+    return config["networks"][network.show_active()]["nft_json_folder"]
+
+
+def get_prereveal_json_folder():
+    return config["networks"][network.show_active()]["nft_prereveal_json_folder"]
 
 
 def get_price_feed_address(account, mock_value=None):
@@ -57,8 +69,20 @@ def adjust_BTC_USD_price(usd_price):
     return usd_price * (10**8)
 
 
-def main(BTC_USD_price=None):
+def price_normal_as_wei(season):
+    return Wei(str(config["season"][season]["price"]["normal"]) + " ether")
+
+
+def price_wl_as_wei(season):
+    return Wei(str(config["season"][season]["price"]["wl"]) + " ether")
+
+
+def main():
+    season = "Chicago"
     # (for when calling from the command line)
-    if len(sys.argv) == 2 and sys.argv[1].isnumeric():
-        BTC_USD_price = sys.argv[1]
-    return deploy_poor_apes_contract(BTC_USD_price)
+    if len(sys.argv) == 2:
+        if sys.argv[1] not in ["chicago", "nyc", "detroit"]:
+            raise Exception("Season needs to be chicago, nyc or detroit")
+        else:
+            season = sys.argv[1]
+    return deploy_poor_apes_contract(None, season)
