@@ -2,8 +2,7 @@ import os
 import sys
 import pytest
 import requests
-from brownie import reverts
-from brownie import Wei, accounts
+from brownie import Wei, accounts, reverts
 
 current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
@@ -94,7 +93,7 @@ def test_can_mint_five(contract):
 
 @pytest.mark.mint
 def test_can_not_mint_six(contract):
-    with reverts("You can only mint up to 5 NFTs"):
+    with reverts("You can not mint that many NFTs (3)"):
         contract.mint(
             6,
             {

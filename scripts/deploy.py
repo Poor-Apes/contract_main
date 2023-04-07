@@ -1,19 +1,44 @@
 import sys
 from random import randrange
-from brownie import Wei, accounts, Contract, network, config, MockV3Aggregator, PoorApes
+from brownie import (
+    Wei,
+    accounts,
+    network,
+    config,
+    MockV3Aggregator,
+    PoorApes,
+    FreeMint,
+)
 
 
-def deploy_poor_apes_contract(BTC_USD_price=None, season=None):
+def deploy_poor_apes_contract(
+    BTC_USD_price=None,
+    season=None,
+    accessories_contract=None,
+    accommodation_contract=None,
+):
     if season == None:
         season = "chicago"
+    if season not in ["chicago", "nyc", "detroit"]:
+        raise Exception("Season needs to be chicago, nyc or detroit")
+
+    account = get_owner_account()
+    accessories_contract_obj = accessories_contract
+    accommodation_contract_obj = accommodation_contract
+    if accessories_contract is None:
+        accessories_contract_obj = get_accessories_smart_contract_address(account)
+    if accommodation_contract is None:
+        accommodation_contract_obj = get_accommodation_smart_contract_address(account)
+
     if network.show_active() == "development" and BTC_USD_price == None:
         print("You need to pass a BTC_USD price")
     else:
-        account = get_owner_account()
         price_feed_address = get_price_feed_address(account, int(BTC_USD_price))
         poor_apes_contract = PoorApes.deploy(
             price_feed_address,
             get_marketing_account(),
+            accessories_contract_obj,
+            accommodation_contract_obj,
             get_json_folder(),
             get_prereveal_json_folder(),
             price_normal_as_wei(season),
@@ -38,6 +63,20 @@ def get_marketing_account():
         return accounts.add(
             config["networks"][network.show_active()]["marketing_address"]
         )
+
+
+def get_accessories_smart_contract_address(account):
+    if network.show_active() == "development":
+        return FreeMint.deploy({"from": account}).address
+    else:
+        return config["networks"][network.show_active()]["accessories_address"]
+
+
+def get_accommodation_smart_contract_address(account):
+    if network.show_active() == "development":
+        return FreeMint.deploy({"from": account}).address
+    else:
+        return config["networks"][network.show_active()]["accommodation_address"]
 
 
 def get_json_folder():

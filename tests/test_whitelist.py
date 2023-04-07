@@ -42,7 +42,7 @@ def test_added_and_then_removed_from_whitelist(contract):
 # NOTE: This needs to be re-done
 @pytest.mark.mint
 def test_mint_when_on_whitelist(contract):
-    original_cost = contract.mint_cost({"from": accounts[1]})
+    original_cost = contract.mint_cost({"from": accounts[3]})
     contract.addToWhiteList(accounts[3], {"from": accounts[0]})
     assert original_cost != contract.mint_cost(
         {"from": accounts[3]}
@@ -52,7 +52,7 @@ def test_mint_when_on_whitelist(contract):
     ), "Buyer wallet does not have 1,000 eth in it"
     assert (
         contract.balanceOf(accounts[3]) == 0
-    ), "Buyer wallet already has a Poor Ape NFT in it"
+    ), "Buyer wallet should not have a Poor Ape NFT in it"
     contract.mint(
         {"from": accounts[3], "value": contract.mint_cost({"from": accounts[3]})}
     )
@@ -60,8 +60,8 @@ def test_mint_when_on_whitelist(contract):
         contract.balanceOf(accounts[3]) == 1
     ), "Buyer wallet should have an NFT in it after minting"
     # to take into consideration gas
-    assert (
-        accounts[3].balance() >= Wei("1000 ether") - contract.mint_price_whitlist()
+    assert accounts[3].balance() >= Wei("1000 ether") - contract.mint_price_whitlist(
+        {"from": accounts[3]}
     ), "Buyer should pay whitelist prices"
 
 
@@ -99,7 +99,7 @@ def test_being_on_the_wl_only_works_for_two_mints(contract):
     contract.addToWhiteList(accounts[1], {"from": accounts[0]})
     wl_mint_price = contract.mint_cost(2, {"from": accounts[1]})
     # Can not mint 3 NFTs when on WL
-    with reverts("You can only mint up to 2 NFTs"):
+    with reverts("You can not mint that many NFTs (1)"):
         contract.mint(3, {"from": accounts[1], "value": wl_mint_price})
     # Mint 2 NFTs
     contract.mint(2, {"from": accounts[1], "value": wl_mint_price})

@@ -12,6 +12,10 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
+interface FreeMintContracts {
+    function balanceOf(address owner) external view returns (uint256);
+}
+
 contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     using PRBMathSD59x18 for int256;
 
@@ -24,21 +28,29 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     int256 public max_supply = 700;
     int256 public max_batch = 5;
     int256 public max_batch_wl = 2;
+    int256 public max_batch_free_mint_wl = 2;
+
     int256 public mint_price = 0;
     int256 public mint_price_whitlist = 0;
+    int256 public mint_price_both_free_mints = 0;
+
     bool public prereveal = true;
+
     string public IPFS_JSON_Folder;
     string private IPFS_prereveal_JSON_Folder;
+
+    FreeMintContracts public accessories_address;
+    FreeMintContracts public accommodation_address;
+
     bool public marketing_has_withdrawn = false;
+
     address public marketing_address;
     uint256 public marketing_budget_in_ETH = 10 * 10 ** 18;
+
     mapping(address => bool) public whitelist;
     mapping(address => bool) public whitelist_used;
-    mapping(uint256 => uint256) private _nftType;
+
     uint256 public btc_price_in_usd = 20000 * 10 ** 8;
-    // Minting curves
-    uint256 public investor_minting_curve = 569900000000000000; // 0.5699
-    uint256 public mover_minting_curve = 285000000000000000; //0.285
 
     /*
      * This needs to be the 46 alphanumeric string in the ipfs URL
@@ -51,6 +63,8 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     constructor(
         address _priceFeed,
         address _marketing_address,
+        address _accessories_address,
+        address _accommodation_address,
         string memory _IPFS_JSON_Folder,
         string memory _IPFS_prereveal_JSON_Folder,
         int256 _mint_price,
@@ -68,8 +82,11 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         IPFS_JSON_Folder = _IPFS_JSON_Folder;
         IPFS_prereveal_JSON_Folder = _IPFS_prereveal_JSON_Folder;
         marketing_address = _marketing_address;
+        accessories_address = FreeMintContracts(_accessories_address);
+        accommodation_address = FreeMintContracts(_accommodation_address);
         mint_price = _mint_price;
         mint_price_whitlist = _mint_price_whitlist;
+        mint_price_both_free_mints = _mint_price / 2; // 50% OFF!!! Early community discount
     }
 
     /**
@@ -108,7 +125,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
 
         _safeMint(msg.sender, _num_nfts);
 
-        if (isInWhiteList(msg.sender)) {
+        if (isInWhiteList(msg.sender) || ownsBothFreeMints(msg.sender)) {
             whitelist_used[msg.sender] = true;
         }
 
@@ -120,14 +137,27 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     }
 
     function mint_cost(int256 _num_nfts) public view returns (int256) {
-        if (isInWhiteList(msg.sender) && whitelist_used[msg.sender] == false) {
+        if (
+            ownsBothFreeMints(msg.sender) && whitelist_used[msg.sender] == false
+        ) {
+            require(
+                _num_nfts <= max_batch_free_mint_wl,
+                "You can not mint that many NFTs (2)"
+            );
+            return mint_price_both_free_mints * _num_nfts;
+        } else if (
+            isInWhiteList(msg.sender) && whitelist_used[msg.sender] == false
+        ) {
             require(
                 _num_nfts <= max_batch_wl,
-                "You can only mint up to 2 NFTs"
+                "You can not mint that many NFTs (1)"
             );
             return mint_price_whitlist * _num_nfts;
         } else {
-            require(_num_nfts <= max_batch, "You can only mint up to 5 NFTs");
+            require(
+                _num_nfts <= max_batch,
+                "You can not mint that many NFTs (3)"
+            );
             return mint_price * _num_nfts;
         }
     }
@@ -155,6 +185,16 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
 
     function isInWhiteList(address _addr) public view returns (bool) {
         return whitelist[_addr];
+    }
+
+    function ownsBothFreeMints(address _addr) public view returns (bool) {
+        if (
+            accessories_address.balanceOf(_addr) > 0 &&
+            accommodation_address.balanceOf(_addr) > 0
+        ) {
+            return true;
+        }
+        return false;
     }
 
     function withdraw_owner() public payable onlyOwner {

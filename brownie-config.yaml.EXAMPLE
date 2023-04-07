@@ -35,6 +35,8 @@ networks:
     marketing_address: '0x000000000000000000000000000000000example'
     nft_json_folder: '0x000000000000000000000000000000000example'
     nft_prereveal_json_folder: '0000000000000000000000000000000000000prereveal'
+    accessories_address: '0x000000000000000000000000000000000000acce'
+    accommodation_address: '0x000000000000000000000000000000000000acco'
   development:
     max_supply: 3
     nft_json_folder: '0x000000000000000000000000000000000example'
