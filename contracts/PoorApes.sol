@@ -36,8 +36,8 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
 
     bool public prereveal = true;
 
-    string public IPFS_JSON_Folder;
-    string private IPFS_prereveal_JSON_Folder;
+    string private IPFS_JSON_Folder;
+    string public IPFS_prereveal_JSON_Folder;
 
     FreeMintContracts public accessories_address;
     FreeMintContracts public accommodation_address;
