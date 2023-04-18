@@ -2,13 +2,13 @@ import os
 import sys
 import pytest
 import requests
-from brownie import Wei, accounts, reverts
+from brownie import Wei, accounts, reverts, config
 
 current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
 sys.path.append(scripts_path)
 
-from common import contract, contract_btc_above_20k
+from common import contract, contract_btc_above_20k, contract_new_york, contract_detroit
 
 
 # $ brownie console
@@ -126,8 +126,34 @@ def test_tokenuri_function_returns_json(contract):
 
 @pytest.mark.mint
 @pytest.mark.long
-def test_can_not_mint_701_nfts(contract):
-    for i in range(699):
+def test_can_not_mint_1401_chicago_nfts(contract):
+    supply = config["season"]["nyc"]["max_supply"]
+    assert contract.max_supply() == config["season"]["chicago"]["max_supply"]
+    for i in range(supply - 1):
         contract.mint({"from": accounts[i], "value": contract.mint_cost()})
     with reverts():
-        contract.mint({"from": accounts[700], "value": contract.mint_cost()})
+        contract.mint({"from": accounts[supply], "value": contract.mint_cost()})
+
+
+@pytest.mark.mint
+@pytest.mark.long
+def test_can_not_mint_1701_nyc_nfts(contract_new_york):
+    contract = contract_new_york
+    supply = config["season"]["nyc"]["max_supply"]
+    assert contract.max_supply() == supply
+    for i in range(supply - 1):
+        contract.mint({"from": accounts[i], "value": contract.mint_cost()})
+    with reverts():
+        contract.mint({"from": accounts[supply], "value": contract.mint_cost()})
+
+
+@pytest.mark.mint
+@pytest.mark.long
+def test_can_not_mint_2001_detroit_nfts(contract_detroit):
+    contract = contract_detroit
+    supply = config["season"]["detroit"]["max_supply"]
+    assert contract.max_supply() == supply
+    for i in range(supply - 1):
+        contract.mint({"from": accounts[i], "value": contract.mint_cost()})
+    with reverts():
+        contract.mint({"from": accounts[supply], "value": contract.mint_cost()})

@@ -16,23 +16,22 @@ compiler:
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.3'
 season:
   chicago:
-    supply: 1400
+    max_supply: 1400
     price:
       normal: 0.1
       wl: 0.07
   nyc:
-    supply: 1700
+    max_supply: 1700
     price:
       normal: 0.09
       wl: 0.06
   detroit:
-    supply: 2000
+    max_supply: 2000
     price:
       normal: 0.08
       wl: 0.05
 networks:
   goerli:
-    max_supply: 1000
     # The location of the BTC_USD ChainLink contract on Goerli
     btc_usd_price_feed: '0xA39434A63A52E749F02807ae27335515BA4b07F7'
     marketing_address: '0x000000000000000000000000000000000example'
@@ -41,6 +40,14 @@ networks:
     accessories_address: '0x000000000000000000000000000000000000acce'
     accommodation_address: '0x000000000000000000000000000000000000acco'
   development:
-    max_supply: 3
+    cmd_settings:
+      accounts: 801
     nft_json_folder: '0x000000000000000000000000000000000example'
     nft_prereveal_json_folder: '0000000000000000000000000000000000000prereveal'
+  mainnet:
+    btc_usd_price_feed: '0xA39434A63A52E749F02807ae27335515BA4b07F7'
+    marketing_address: '0x000000000000000000000000000000000example'
+    nft_json_folder: '0x000000000000000000000000000000000example'
+    nft_prereveal_json_folder: '0000000000000000000000000000000000000prereveal'
+    accessories_address: '0x000000000000000000000000000000000000acce'
+    accommodation_address: '0x000000000000000000000000000000000000acco'

@@ -41,7 +41,7 @@ def deploy_poor_apes_contract(
             accommodation_contract_obj,
             get_json_folder(),
             get_prereveal_json_folder(),
-            get_supply(season),
+            get_max_supply(season),
             price_normal_as_wei(season),
             price_wl_as_wei(season),
             {"from": account},
@@ -109,8 +109,8 @@ def adjust_BTC_USD_price(usd_price):
     return usd_price * (10**8)
 
 
-def get_supply(season):
-    return config["season"][season]["supply"]
+def get_max_supply(season):
+    return config["season"][season]["max_supply"]
 
 
 def price_normal_as_wei(season):
