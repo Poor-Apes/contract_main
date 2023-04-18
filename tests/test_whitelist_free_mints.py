@@ -55,7 +55,6 @@ def test_own_both_free_mints_Minting_accommodation_first():
     )
 
 
-# check free mint holder take presedent over wl holders
 @pytest.mark.whitelist_free_mints
 def test_free_mint_wl_has_precedence_over_normal_wl():
     account = accounts[7]

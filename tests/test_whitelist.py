@@ -67,20 +67,13 @@ def test_mint_when_on_whitelist(contract):
 
 @pytest.mark.whitelist
 def test_minting_and_minting_on_wl_are_different_cost(contract):
-    contract.addToWhiteList(accounts[3], {"from": accounts[0]})
-    assert contract.mint_cost(1, {"from": accounts[3]}) != contract.mint_cost(
-        1, {"from": accounts[4]}
+    contract.addToWhiteList(accounts[4], {"from": accounts[0]})
+    assert contract.mint_cost(1, {"from": accounts[4]}) != contract.mint_cost(
+        1, {"from": accounts[5]}
     ), "Minting from account 1 is the same cost as minting from acount 2 even though account 2 is on the whitelist"
     # Test that they actully have different minting costs
-    account_1_balance = accounts[3].balance()
-    account_2_balance = accounts[4].balance()
-    contract.mint(
-        1,
-        {
-            "from": accounts[3],
-            "value": contract.mint_cost(1, {"from": accounts[3]}),
-        },
-    )
+    account_1_balance = accounts[4].balance()
+    account_2_balance = accounts[5].balance()
     contract.mint(
         1,
         {
@@ -88,8 +81,15 @@ def test_minting_and_minting_on_wl_are_different_cost(contract):
             "value": contract.mint_cost(1, {"from": accounts[4]}),
         },
     )
-    assert (account_1_balance - accounts[3].balance()) != (
-        account_2_balance - accounts[4].balance()
+    contract.mint(
+        1,
+        {
+            "from": accounts[5],
+            "value": contract.mint_cost(1, {"from": accounts[5]}),
+        },
+    )
+    assert (account_1_balance - accounts[4].balance()) != (
+        account_2_balance - accounts[5].balance()
     ), "Even though account 3 is on the whitelist the minting costs of account 3 & 4 are the same"
 
 

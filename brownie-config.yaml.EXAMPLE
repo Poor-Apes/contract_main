@@ -16,14 +16,17 @@ compiler:
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.3'
 season:
   chicago:
+    supply: 1400
     price:
       normal: 0.1
       wl: 0.07
   nyc:
+    supply: 1700
     price:
       normal: 0.09
       wl: 0.06
   detroit:
+    supply: 2000
     price:
       normal: 0.08
       wl: 0.05

@@ -41,6 +41,7 @@ def deploy_poor_apes_contract(
             accommodation_contract_obj,
             get_json_folder(),
             get_prereveal_json_folder(),
+            get_supply(season),
             price_normal_as_wei(season),
             price_wl_as_wei(season),
             {"from": account},
@@ -106,6 +107,10 @@ def get_price_feed_address(account, mock_value=None):
 
 def adjust_BTC_USD_price(usd_price):
     return usd_price * (10**8)
+
+
+def get_supply(season):
+    return config["season"][season]["supply"]
 
 
 def price_normal_as_wei(season):

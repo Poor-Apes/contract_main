@@ -25,7 +25,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
     Counters.Counter private _tokenIds;
     AggregatorV3Interface public priceFeed;
 
-    int256 public max_supply = 700;
+    int256 public max_supply = 0;
     int256 public max_batch = 5;
     int256 public max_batch_wl = 2;
     int256 public max_batch_free_mint_wl = 2;
@@ -67,6 +67,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         address _accommodation_address,
         string memory _IPFS_JSON_Folder,
         string memory _IPFS_prereveal_JSON_Folder,
+        int256 _max_supply,
         int256 _mint_price,
         int256 _mint_price_whitlist
     ) ERC721A("Poor Apes - Genesis", "PA-G") {
@@ -84,6 +85,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         marketing_address = _marketing_address;
         accessories_address = FreeMintContracts(_accessories_address);
         accommodation_address = FreeMintContracts(_accommodation_address);
+        max_supply = _max_supply;
         mint_price = _mint_price;
         mint_price_whitlist = _mint_price_whitlist;
         mint_price_both_free_mints = _mint_price / 2; // 50% OFF!!! Early community discount
