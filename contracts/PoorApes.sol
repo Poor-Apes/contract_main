@@ -4,12 +4,9 @@ pragma solidity ^0.8.4;
 
 // make changes to the brownie config to import these libraries
 import "@chirulabs/contracts/ERC721A.sol";
-import "@prb/contracts/PRBMathSD59x18.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 interface FreeMintContracts {
@@ -17,9 +14,6 @@ interface FreeMintContracts {
 }
 
 contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
-    using PRBMathSD59x18 for int256;
-
-    using SafeMath for uint256;
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIds;
