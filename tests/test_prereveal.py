@@ -56,4 +56,4 @@ def test_prereveal_URI(contract):
     # assert True == False
     assert get_json_folder() in contract.tokenURI(
         0
-    ), "json folder hash not found in URI"
+    ), "NFT json folder hash not found in URI"

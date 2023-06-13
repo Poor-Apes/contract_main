@@ -3,7 +3,7 @@ import sys
 import pytest
 import requests
 from brownie import reverts
-from brownie import Wei, accounts
+from brownie import Wei, accounts, config
 
 current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
@@ -42,26 +42,27 @@ def test_added_and_then_removed_from_whitelist(contract):
 # NOTE: This needs to be re-done
 @pytest.mark.mint
 def test_mint_when_on_whitelist(contract):
-    original_cost = contract.mint_cost({"from": accounts[3]})
-    contract.addToWhiteList(accounts[3], {"from": accounts[0]})
+    last_account = accounts[len(accounts) - 1]
+    original_cost = contract.mint_cost({"from": last_account})
+    contract.addToWhiteList(last_account, {"from": accounts[0]})
     assert original_cost != contract.mint_cost(
-        {"from": accounts[3]}
+        {"from": last_account}
     ), "Adding the account to the whitelist did not make a difference to the mint price"
-    assert accounts[3].balance() == Wei(
+    assert last_account.balance() == Wei(
         "1000 ether"
     ), "Buyer wallet does not have 1,000 eth in it"
     assert (
-        contract.balanceOf(accounts[3]) == 0
+        contract.balanceOf(last_account) == 0
     ), "Buyer wallet should not have a Poor Ape NFT in it"
     contract.mint(
-        {"from": accounts[3], "value": contract.mint_cost({"from": accounts[3]})}
+        {"from": last_account, "value": contract.mint_cost({"from": last_account})}
     )
     assert (
-        contract.balanceOf(accounts[3]) == 1
+        contract.balanceOf(last_account) == 1
     ), "Buyer wallet should have an NFT in it after minting"
     # to take into consideration gas
-    assert accounts[3].balance() >= Wei("1000 ether") - contract.mint_price_whitlist(
-        {"from": accounts[3]}
+    assert last_account.balance() >= Wei("1000 ether") - contract.mint_price_whitlist(
+        {"from": last_account}
     ), "Buyer should pay whitelist prices"
 
 

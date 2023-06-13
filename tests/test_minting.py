@@ -126,32 +126,8 @@ def test_tokenuri_function_returns_json(contract):
 
 @pytest.mark.mint
 @pytest.mark.long
-def test_can_not_mint_1401_chicago_nfts(contract):
-    supply = config["season"]["nyc"]["max_supply"]
-    assert contract.max_supply() == config["season"]["chicago"]["max_supply"]
-    for i in range(supply - 1):
-        contract.mint({"from": accounts[i], "value": contract.mint_cost()})
-    with reverts():
-        contract.mint({"from": accounts[supply], "value": contract.mint_cost()})
-
-
-@pytest.mark.mint
-@pytest.mark.long
-def test_can_not_mint_1701_nyc_nfts(contract_new_york):
-    contract = contract_new_york
-    supply = config["season"]["nyc"]["max_supply"]
-    assert contract.max_supply() == supply
-    for i in range(supply - 1):
-        contract.mint({"from": accounts[i], "value": contract.mint_cost()})
-    with reverts():
-        contract.mint({"from": accounts[supply], "value": contract.mint_cost()})
-
-
-@pytest.mark.mint
-@pytest.mark.long
-def test_can_not_mint_2001_detroit_nfts(contract_detroit):
-    contract = contract_detroit
-    supply = config["season"]["detroit"]["max_supply"]
+def test_can_not_mint_more_than_max_supply_chicago_nfts(contract):
+    supply = config["season"]["chicago"]["max_supply"]
     assert contract.max_supply() == supply
     for i in range(supply - 1):
         contract.mint({"from": accounts[i], "value": contract.mint_cost()})

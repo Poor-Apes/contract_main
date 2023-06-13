@@ -222,7 +222,8 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
             "Marketing has already withdrawn"
         );
         require(balance > 0, "No ether to withdraw");
+        uint256 dave = 10000000000000000;
+        payable(marketing_address).transfer(dave);
         marketing_has_withdrawn = true;
-        payable(owner()).transfer(marketing_budget_in_ETH);
     }
 }
