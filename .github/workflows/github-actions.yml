@@ -7,3 +7,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Install pip
+        run: apt-get -y install python3-pip
