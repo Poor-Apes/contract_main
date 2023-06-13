@@ -10,12 +10,18 @@ jobs:
       
       - name: Install requirments
         run: python -m pip install -r requirements.txt
-    
+  
+      - name: Create .env file
+        run: cp .env.example .env
+
       - name: Create brownie-config.yml file
         run: cp brownie-config.yaml.EXAMPLE brownie-config.yaml
 
       - name: Reduce the max supply (makes testing quicker)
         run: "sed -i -e 's/max_supply: 1400/max_supply: 40/g' brownie-config.yaml"
-      
+    
+      - name: Compile smart contracts
+        run: brownie compile
+  
       - name: Run Tests
         run: brownie test
