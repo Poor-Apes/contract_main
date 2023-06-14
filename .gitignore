@@ -9,3 +9,4 @@ brownie-config.yaml.*
 build/
 reports/
 node_modules/
+react/

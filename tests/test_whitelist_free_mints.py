@@ -3,11 +3,11 @@ import sys
 import pytest
 from brownie import accounts, reverts, FreeMint
 
-from deploy import deploy_poor_apes_contract
-
 current_wd = os.path.dirname(os.path.realpath(__file__))
 scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
 sys.path.append(scripts_path)
+
+from deploy import deploy_poor_apes_contract
 
 
 def mint_all_three_contracts():

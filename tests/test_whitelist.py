@@ -1,13 +1,6 @@
-import os
-import sys
 import pytest
-import requests
 from brownie import reverts
-from brownie import Wei, accounts, config
-
-current_wd = os.path.dirname(os.path.realpath(__file__))
-scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
-sys.path.append(scripts_path)
+from brownie import Wei, accounts
 
 from common import contract
 
