@@ -10,6 +10,8 @@ from brownie import (
     FreeMint,
 )
 
+seasons = ["chicago", "new_york", "detroit"]
+
 
 def deploy_poor_apes_contract(
     BTC_USD_price=None,
@@ -17,10 +19,13 @@ def deploy_poor_apes_contract(
     accessories_contract=None,
     accommodation_contract=None,
 ):
+    if type(BTC_USD_price) != int:
+        raise Exception("BTC_USD_price needs to be of type int")
+
     if season == None:
         season = "chicago"
-    if season not in ["chicago", "nyc", "detroit"]:
-        raise Exception("Season needs to be chicago, nyc or detroit")
+    if season not in seasons:
+        raise Exception("Season needs to be " + ", ".join(seasons))
 
     account = get_owner_account()
     accessories_contract_obj = accessories_contract
@@ -35,6 +40,8 @@ def deploy_poor_apes_contract(
     else:
         price_feed_address = get_price_feed_address(account, int(BTC_USD_price))
         poor_apes_contract = PoorApes.deploy(
+            get_name(season),
+            get_ticker(season),
             price_feed_address,
             get_marketing_account(),
             accessories_contract_obj,
@@ -80,6 +87,14 @@ def get_accommodation_smart_contract_address(account):
         return config["networks"][network.show_active()]["accommodation_address"]
 
 
+def get_name(active_season):
+    return "Poor Apes - " + active_season.replace("_", " ").title()
+
+
+def get_ticker(active_season):
+    return config["season"][active_season]["ticker"]
+
+
 def get_json_folder():
     return config["networks"][network.show_active()]["nft_json_folder"]
 
@@ -122,11 +137,11 @@ def price_wl_as_wei(season):
 
 
 def main():
-    season = "Chicago"
+    season = "chicago"
     # (for when calling from the command line)
     if len(sys.argv) == 2:
-        if sys.argv[1] not in ["chicago", "nyc", "detroit"]:
-            raise Exception("Season needs to be chicago, nyc or detroit")
+        if sys.argv[1] not in ["chicago", "new_york", "detroit"]:
+            raise Exception("Season needs to be chicago, new_york or detroit")
         else:
             season = sys.argv[1]
     return deploy_poor_apes_contract(None, season)

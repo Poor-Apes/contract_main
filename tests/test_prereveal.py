@@ -1,16 +1,8 @@
-import os
-import sys
 import pytest
-import requests
-from brownie import reverts
 from brownie import Wei, accounts
-
-current_wd = os.path.dirname(os.path.realpath(__file__))
-scripts_path = os.path.join(current_wd, os.path.join("..", "scripts"))
-sys.path.append(scripts_path)
+from common import contract
 
 from deploy import get_prereveal_json_folder, get_json_folder
-from common import contract
 
 
 @pytest.mark.prereveal

@@ -55,6 +55,8 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
      *                                          ^ THIS BIT ^
      */
     constructor(
+        string memory _name_,
+        string memory _symbol_,
         address _priceFeed,
         address _marketing_address,
         address _accessories_address,
@@ -64,7 +66,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         int256 _max_supply,
         int256 _mint_price,
         int256 _mint_price_whitlist
-    ) ERC721A("Poor Apes - Genesis", "PA-G") {
+    ) ERC721A(_name_, _symbol_) {
         require(
             bytes(_IPFS_JSON_Folder).length == 46,
             "IPFS folder incorrect length"
