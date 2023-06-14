@@ -16,16 +16,19 @@ compiler:
       - '@chirulabs=chiru-labs/ERC721A@4.2.3'
 season:
   chicago:
-    max_supply: 1400
+    ticker: PA-C 
+    max_supply: 40
     price:
       normal: 0.1
       wl: 0.07
-  nyc:
+  new_york:
+    ticker: PA-NY
     max_supply: 1700
     price:
       normal: 0.09
       wl: 0.06
   detroit:
+    ticker: PA-D
     max_supply: 2000
     price:
       normal: 0.08
