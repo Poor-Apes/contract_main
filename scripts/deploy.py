@@ -36,7 +36,7 @@ def deploy_poor_apes_contract(
         accommodation_contract_obj = get_accommodation_smart_contract_address(account)
 
     if network.show_active() == "development" and BTC_USD_price == None:
-        print("You need to pass a BTC_USD price")
+        raise Exception("You need to pass a BTC_USD price")
     else:
         price_feed_address = get_price_feed_address(account, int(BTC_USD_price))
         poor_apes_contract = PoorApes.deploy(
