@@ -84,7 +84,7 @@ contract PoorApes is ERC721A, Ownable, ReentrancyGuard {
         max_supply = _max_supply;
         mint_price = _mint_price;
         mint_price_whitlist = _mint_price_whitlist;
-        mint_price_both_free_mints = 0; // 50% OFF!!! Early community discount
+        mint_price_both_free_mints = 0; // Community member? = FREE MINT!!!
     }
 
     /**
